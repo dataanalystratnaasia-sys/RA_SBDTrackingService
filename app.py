@@ -194,7 +194,7 @@ def main():
 
     id_input = st.text_input(
         "ID Barang",
-        placeholder="Contoh: BRG-001",
+        placeholder="Contoh: STN-PWT-0001",
         max_chars=50,
     )
 
