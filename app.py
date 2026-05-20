@@ -7,12 +7,27 @@ import pandas as pd
 # ─────────────────────────────────────────────
 # KONFIGURASI
 # ─────────────────────────────────────────────
-SPREADSHEET_ID = "16oEcvCWuhM_FPl62IiwNQBX90NBYEkNQszQljNe7YCA"  # Ambil dari URL Google Sheet
+SPREADSHEET_ID = "16oEcvCWuhM_FPl62IiwNQBX90NBYEkNQszQljNe7YCA"
 SHEET_NAME = "TRACKING"
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets.readonly",
     "https://www.googleapis.com/auth/drive.readonly",
+]
+
+# Kolom progress servis (indeks 7–17, setelah kolom info pelanggan)
+SERVICE_COLS = [
+    "Barang Diterima RA",
+    "Waiting List",
+    "Status Pengecekan Teknisi",
+    "Pengajuan Service ke Customer",
+    "Persetujuan Perbaikan Customer",
+    "Proses Inden Part",
+    "Progress Perbaikan Barang",
+    "Status Uji Coba Barang",
+    "Status Selesai Perbaikan",
+    "Status Pengiriman Barang",
+    "Status Barang Diterima Customer",
 ]
 
 # ─────────────────────────────────────────────
@@ -35,16 +50,14 @@ def load_data():
     all_values = sheet.get_all_values()
 
     if len(all_values) < 2:
-        return pd.DataFrame(), []
+        return pd.DataFrame()
 
     headers = all_values[0]
     rows    = all_values[1:]
 
     df = pd.DataFrame(rows, columns=headers)
     df = df[df.iloc[:, 0].str.strip() != ""]
-
-    service_cols = headers[1:10]
-    return df, service_cols
+    return df
 
 
 # ─────────────────────────────────────────────
@@ -57,12 +70,42 @@ def cari_barang(df, id_barang):
     return hasil.iloc[0] if not hasil.empty else None
 
 
-def render_progress(row, service_cols):
+def render_info_pelanggan(row):
+    """Tampilkan kartu info pelanggan."""
+    nama   = str(row.get("Nama Pelanggan", "-")).strip()
+    telp   = str(row.get("No. Telephone", "-")).strip()
+    alamat = str(row.get("Alamat", "-")).strip()
+    merk   = str(row.get("Merk", "-")).strip()
+    tipe   = str(row.get("Type", "-")).strip()
+    issue  = str(row.get("Issue", "-")).strip()
+
+    st.markdown("### 👤 Informasi Pelanggan")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"**Nama**")
+        st.write(nama)
+        st.markdown(f"**No. Telepon**")
+        st.write(telp)
+        st.markdown(f"**Alamat**")
+        st.write(alamat)
+    with col2:
+        st.markdown(f"**Merk**")
+        st.write(merk)
+        st.markdown(f"**Type**")
+        st.write(tipe)
+        st.markdown(f"**Keluhan / Issue**")
+        st.write(issue)
+
+    st.markdown("---")
+
+
+def render_progress(row):
     selesai = 0
-    total   = len(service_cols)
+    total   = len(SERVICE_COLS)
 
     status_list = []
-    for col in service_cols:
+    for col in SERVICE_COLS:
         val = str(row.get(col, "FALSE")).strip().upper()
         done = val == "TRUE"
         if done:
@@ -71,7 +114,6 @@ def render_progress(row, service_cols):
 
     persen = int((selesai / total) * 100) if total > 0 else 0
 
-    # Progress bar native Streamlit
     st.markdown(f"### 📊 Progress Servis: {persen}% ({selesai}/{total} selesai)")
     st.progress(persen / 100)
     st.markdown("")
@@ -162,9 +204,9 @@ def render_progress(row, service_cols):
     tinggi = total * 58 + 20
     components.html(html, height=tinggi, scrolling=False)
 
-    # Catatan teknisi
+    # Catatan teknisi (kolom "Catatan Service")
     st.markdown("---")
-    catatan = str(row.iloc[10]).strip() if len(row) > 10 else ""
+    catatan = str(row.get("Catatan Service", "")).strip()
 
     st.markdown("### 🗒️ Catatan Teknisi")
     if catatan and catatan.upper() not in ("", "NONE", "NAN"):
@@ -186,15 +228,15 @@ def main():
     st.markdown(
         """
         <h1 style='text-align:center; font-size:2.2rem;'>🔧 Tracking Servis Barang</h1>
-        <p style='text-align:center; color:gray;'>Masukkan ID barang kamu untuk melihat progress servis.</p>
+        <p style='text-align:center; color:gray;'>Masukkan ID servis kamu untuk melihat progress servis.</p>
         <hr>
         """,
         unsafe_allow_html=True,
     )
 
     id_input = st.text_input(
-        "ID Barang",
-        placeholder="Contoh: SRV-000",
+        "ID Servis",
+        placeholder="Contoh: 164/SC-SBD/05/26",
         max_chars=50,
     )
 
@@ -202,12 +244,12 @@ def main():
 
     if cari or id_input:
         if not id_input.strip():
-            st.warning("Silakan masukkan ID barang terlebih dahulu.")
+            st.warning("Silakan masukkan ID servis terlebih dahulu.")
             return
 
         with st.spinner("Mengambil data..."):
             try:
-                df, service_cols = load_data()
+                df = load_data()
             except Exception as e:
                 st.error(f"❌ Gagal terhubung ke database: {e}")
                 return
@@ -219,11 +261,12 @@ def main():
         row = cari_barang(df, id_input)
 
         if row is None:
-            st.error(f"❌ ID **{id_input.strip()}** tidak ditemukan. Periksa kembali ID barang kamu.")
+            st.error(f"❌ ID **{id_input.strip()}** tidak ditemukan. Periksa kembali ID servis kamu.")
         else:
             st.success(f"✅ Data ditemukan untuk ID: **{row.iloc[0]}**")
             st.markdown("---")
-            render_progress(row, service_cols)
+            render_info_pelanggan(row)
+            render_progress(row)
 
     st.markdown(
         "<br><hr><p style='text-align:center; color:lightgray; font-size:0.8rem;'>Powered by Streamlit & Google Sheets</p>",
