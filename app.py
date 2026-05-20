@@ -72,12 +72,14 @@ def cari_barang(df, id_barang):
 
 def render_info_pelanggan(row):
     """Tampilkan kartu info pelanggan."""
-    nama   = str(row.get("Nama Pelanggan", "-")).strip()
-    telp   = str(row.get("No. Telephone", "-")).strip()
-    alamat = str(row.get("Alamat", "-")).strip()
-    merk   = str(row.get("Merk", "-")).strip()
-    tipe   = str(row.get("Type", "-")).strip()
-    issue  = str(row.get("Issue", "-")).strip()
+    def _get(col):
+        return str(row[col]).strip() if col in row.index else "-"
+    nama   = _get("Nama Pelanggan")
+    telp   = _get("No. Telephone")
+    alamat = _get("Alamat")
+    merk   = _get("Merk")
+    tipe   = _get("Type")
+    issue  = _get("Issue")
 
     st.markdown("### 👤 Informasi Pelanggan")
 
@@ -106,7 +108,7 @@ def render_progress(row):
 
     status_list = []
     for col in SERVICE_COLS:
-        val = str(row.get(col, "FALSE")).strip().upper()
+        val = str(row[col]).strip().upper() if col in row.index else "FALSE"
         done = val == "TRUE"
         if done:
             selesai += 1
@@ -206,7 +208,7 @@ def render_progress(row):
 
     # Catatan teknisi (kolom "Catatan Service")
     st.markdown("---")
-    catatan = str(row.get("Catatan Service", "")).strip()
+    catatan = str(row["Catatan Service"]).strip() if "Catatan Service" in row.index else ""
 
     st.markdown("### 🗒️ Catatan Teknisi")
     if catatan and catatan.upper() not in ("", "NONE", "NAN"):
