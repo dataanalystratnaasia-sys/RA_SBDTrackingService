@@ -74,30 +74,37 @@ def render_info_pelanggan(row):
     """Tampilkan kartu info pelanggan."""
     def _get(col):
         return str(row[col]).strip() if col in row.index else "-"
-    nama   = _get("Nama Pelanggan")
-    telp   = _get("No. Telephone")
-    alamat = _get("Alamat")
-    merk   = _get("Merk")
-    tipe   = _get("Type")
-    issue  = _get("Issue")
+    nama      = _get("Nama Pelanggan")
+    telp      = _get("No. Telephone")
+    alamat    = _get("Alamat")
+    merk      = _get("Merk")
+    tipe      = _get("Type")
+    issue     = _get("Issue")
+    guarantee = _get("Guarantee")
 
     st.markdown("### 👤 Informasi Pelanggan")
 
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown(f"**Nama**")
+        st.markdown("**Nama**")
         st.write(nama)
-        st.markdown(f"**No. Telepon**")
+        st.markdown("**No. Telepon**")
         st.write(telp)
-        st.markdown(f"**Alamat**")
+        st.markdown("**Alamat**")
         st.write(alamat)
     with col2:
-        st.markdown(f"**Merk**")
+        st.markdown("**Merk**")
         st.write(merk)
-        st.markdown(f"**Type**")
+        st.markdown("**Type**")
         st.write(tipe)
-        st.markdown(f"**Keluhan / Issue**")
+        st.markdown("**Keluhan / Issue**")
         st.write(issue)
+
+    # Garansi
+    if guarantee.lower() == "ya":
+        st.success("🛡️ **Garansi:** Ya — Barang ini dalam masa garansi")
+    else:
+        st.warning("🔧 **Garansi:** Tidak — Barang ini di luar masa garansi")
 
     st.markdown("---")
 
