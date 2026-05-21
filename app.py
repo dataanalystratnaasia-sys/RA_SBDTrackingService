@@ -162,7 +162,7 @@ def render_progress(row):
             </div>
         </div>"""
 
-    tinggi = total * 58 + 120
+    tinggi = total * 72 + 160
 
     html = f"""<!DOCTYPE html><html><head><style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
