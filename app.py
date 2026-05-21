@@ -156,7 +156,6 @@ def render_progress(row):
             </div>
         </div>
         """
-
     html = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -187,20 +186,20 @@ def render_progress(row):
         margin-top: 4px;
         flex-shrink: 0;
     }}
-    .dot.done    {{ background-color: #1DB954; }}
-    .dot.pending {{ background-color: #ffffff; border: 2px solid #888; box-sizing: border-box; }}
+    .dot.done    {{ background-color: #f6891f; }}
+    .dot.pending {{ background-color: transparent; border: 2px solid #52a2ff; box-sizing: border-box; }}
     .line {{
         width: 2px;
         min-height: 30px;
         flex: 1;
-        background-color: #444;
+        background-color: #3b76eb;
         margin: 3px 0;
     }}
     .col-right {{ padding-bottom: 18px; }}
-    .label-done    {{ font-weight: 600; color: #f0f0f0; font-size: 0.97rem; }}
-    .label-pending {{ font-weight: 400; color: #888;    font-size: 0.97rem; }}
-    .desc-done    {{ color: #1DB954; font-size: 0.82rem; margin-top: 2px; }}
-    .desc-pending {{ color: #666;    font-size: 0.82rem; margin-top: 2px; }}
+    .label-done    {{ font-weight: 600; color: #ffffff;  font-size: 0.97rem; }}
+    .label-pending {{ font-weight: 400; color: #52a2ff;  font-size: 0.97rem; }}
+    .desc-done    {{ color: #faa849; font-size: 0.82rem; margin-top: 2px; }}
+    .desc-pending {{ color: #ffd057; font-size: 0.82rem; margin-top: 2px; opacity: 0.6; }}
 </style>
 </head>
 <body>
@@ -232,6 +231,114 @@ def main():
         page_title="Tracking Servis",
         page_icon="🔧",
         layout="centered",
+    )
+
+    st.markdown(
+        """
+        <style>
+            /* Background utama */
+            .stApp {
+                background-color: #0e508c;
+            }
+    
+            /* Teks umum */
+            .stApp, .stApp p, .stApp label, .stApp div {
+                color: #ffffff;
+            }
+    
+            /* Input box */
+            .stTextInput > div > div > input {
+                background-color: #3b76eb;
+                color: #ffffff;
+                border: 1.5px solid #52a2ff;
+                border-radius: 8px;
+            }
+            .stTextInput > div > div > input::placeholder {
+                color: #ffd057aa;
+            }
+    
+            /* Tombol primary */
+            .stButton > button[kind="primary"] {
+                background-color: #f6891f;
+                color: #ffffff;
+                border: none;
+                border-radius: 8px;
+                font-weight: 600;
+                transition: background 0.2s;
+            }
+            .stButton > button[kind="primary"]:hover {
+                background-color: #faa849;
+                color: #ffffff;
+            }
+    
+            /* Progress bar */
+            .stProgress > div > div > div > div {
+                background-color: #f6891f;
+            }
+            .stProgress > div > div > div {
+                background-color: #3b76eb;
+                border-radius: 8px;
+            }
+    
+            /* Alert success */
+            .stAlert[data-baseweb="notification"][kind="positive"],
+            div[data-testid="stNotification"].success {
+                background-color: #3b76eb;
+                border-left: 4px solid #52a2ff;
+                color: #ffffff;
+            }
+    
+            /* Alert warning */
+            div[data-testid="stNotification"].warning {
+                background-color: #f6891f22;
+                border-left: 4px solid #faa849;
+                color: #ffffff;
+            }
+    
+            /* Alert error */
+            div[data-testid="stNotification"].error {
+                background-color: #ff444422;
+                border-left: 4px solid #ff6666;
+                color: #ffffff;
+            }
+    
+            /* Info box */
+            div[data-testid="stNotification"].info {
+                background-color: #3b76eb33;
+                border-left: 4px solid #52a2ff;
+                color: #ffffff;
+            }
+    
+            /* st.info() — catatan teknisi */
+            .stAlert {
+                background-color: #3b76eb33 !important;
+                border-left: 4px solid #52a2ff !important;
+                color: #ffffff !important;
+                border-radius: 8px;
+            }
+    
+            /* st.caption */
+            .stApp .stCaption {
+                color: #ffd057 !important;
+            }
+    
+            /* Divider */
+            hr {
+                border-color: #3b76eb;
+            }
+    
+            /* Kolom info pelanggan — label bold */
+            strong {
+                color: #ffd057;
+            }
+    
+            /* Footer */
+            footer, .stApp footer p {
+                color: #52a2ff !important;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
     )
 
     st.markdown(
