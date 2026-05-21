@@ -238,7 +238,7 @@ def main():
         <style>
             /* Background utama */
             .stApp {
-                background-color: #0e508c;
+                background-color: #ffffff;
             }
     
             /* Teks umum */
