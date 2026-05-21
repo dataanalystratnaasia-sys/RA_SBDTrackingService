@@ -15,7 +15,6 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive.readonly",
 ]
 
-# Kolom progress servis (indeks 7–17, setelah kolom info pelanggan)
 SERVICE_COLS = [
     "Barang Diterima RA",
     "Waiting List",
@@ -69,6 +68,7 @@ def cari_barang(df, id_barang):
     hasil = df[mask]
     return hasil.iloc[0] if not hasil.empty else None
 
+
 def render_info_pelanggan(row):
     def _get(col):
         return str(row[col]).strip() if col in row.index else "-"
@@ -80,14 +80,13 @@ def render_info_pelanggan(row):
     issue     = _get("Issue")
     guarantee = _get("Guarantee")
 
-    # Garansi badge
     if guarantee.lower() == "ya":
-        badge = "🛡️ <span style='color:#3b76eb;font-weight:600;'>Ya — Barang ini dalam masa garansi</span>"
-        badge_bg = "#eaf3ff"
+        badge        = "🛡️ <span style='color:#3b76eb;font-weight:600;'>Ya — Barang ini dalam masa garansi</span>"
+        badge_bg     = "#eaf3ff"
         badge_border = "#3b76eb"
     else:
-        badge = "🔧 <span style='color:#f6891f;font-weight:600;'>Tidak — Barang ini di luar masa garansi</span>"
-        badge_bg = "#fff8ee"
+        badge        = "🔧 <span style='color:#f6891f;font-weight:600;'>Tidak — Barang ini di luar masa garansi</span>"
+        badge_bg     = "#fff8ee"
         badge_border = "#faa849"
 
     st.markdown(f"""
@@ -117,6 +116,7 @@ def render_info_pelanggan(row):
     </div>
     """, unsafe_allow_html=True)
 
+
 def render_progress(row):
     selesai = 0
     total   = len(SERVICE_COLS)
@@ -137,18 +137,14 @@ def render_progress(row):
 
     persen = int((selesai / total) * 100) if total > 0 else 0
 
-    # Warna progress bar manual
-    bar_color = "#f6891f"
-    bar_bg    = "#e0e8f5"
-
     timeline_items = ""
     for i, (nama, done) in enumerate(status_list):
         is_last  = (i == len(status_list) - 1)
         line_div = "" if is_last else '<div class="line"></div>'
-        dot_cls   = "dot done"    if done else "dot pending"
-        label_cls = "label-done"  if done else "label-pending"
-        desc      = "Selesai"     if done else "Menunggu"
-        desc_cls  = "desc-done"   if done else "desc-pending"
+        dot_cls   = "dot done"   if done else "dot pending"
+        label_cls = "label-done" if done else "label-pending"
+        desc      = "Selesai"    if done else "Menunggu"
+        desc_cls  = "desc-done"  if done else "desc-pending"
 
         timeline_items += f"""
         <div class="item">
@@ -162,12 +158,17 @@ def render_progress(row):
             </div>
         </div>"""
 
-    tinggi = total * 72 + 160
-
-    html = f"""<!DOCTYPE html><html><head><style>
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+<style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-    body {{
+    html, body {{
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: transparent;
+        overflow: hidden;
+    }}
+    .card {{
         background: #f5f8ff;
         border: 1px solid #d0dff5;
         border-radius: 12px;
@@ -175,23 +176,23 @@ def render_progress(row):
         box-shadow: 0 2px 8px rgba(14,80,140,0.08);
     }}
     .card-title {{
-        color: #0e508c; font-size: 1.2rem; font-weight: 700;
+        color: #0e508c; font-size: 1.15rem; font-weight: 700;
         margin-bottom: 8px;
-    }}
-    .progress-wrap {{
-        background: {bar_bg}; border-radius: 8px;
-        height: 10px; margin-bottom: 20px; overflow: hidden;
-    }}
-    .progress-fill {{
-        height: 100%; width: {persen}%;
-        background: {bar_color}; border-radius: 8px;
-        transition: width 0.4s ease;
     }}
     .progress-label {{
         color: #0e508c; font-size: 0.88rem;
         margin-bottom: 6px; font-weight: 600;
     }}
-    .timeline {{ padding: 4px 0 8px 0; }}
+    .progress-wrap {{
+        background: #e0e8f5; border-radius: 8px;
+        height: 10px; margin-bottom: 20px; overflow: hidden;
+    }}
+    .progress-fill {{
+        height: 100%; width: {persen}%;
+        background: #f6891f; border-radius: 8px;
+        transition: width 0.4s ease;
+    }}
+    .timeline {{ padding: 4px 0 4px 0; }}
     .item {{ display: flex; align-items: flex-start; gap: 14px; }}
     .col-left {{
         display: flex; flex-direction: column;
@@ -204,36 +205,58 @@ def render_progress(row):
     .dot.done    {{ background-color: #f6891f; }}
     .dot.pending {{ background-color: #fff; border: 2px solid #3b76eb; }}
     .line {{
-        width: 2px; min-height: 30px; flex: 1;
+        width: 2px; min-height: 28px; flex: 1;
         background-color: #d0dff5; margin: 3px 0;
     }}
-    .col-right {{ padding-bottom: 18px; }}
-    .label-done    {{ font-weight: 600; color: #000000; font-size: 0.97rem; }}
-    .label-pending {{ font-weight: 400; color: #888888; font-size: 0.97rem; }}
+    .col-right {{ padding-bottom: 16px; }}
+    .label-done    {{ font-weight: 600; color: #000; font-size: 0.95rem; }}
+    .label-pending {{ font-weight: 400; color: #888; font-size: 0.95rem; }}
     .desc-done     {{ color: #f6891f; font-size: 0.82rem; margin-top: 2px; font-weight: 600; }}
-    .desc-pending  {{ color: #aaaaaa; font-size: 0.82rem; margin-top: 2px; }}
-    </style></head><body>
-        <div class="card-title">📊 Progress Servis</div>
-        <div class="progress-label">{persen}% ({selesai}/{total} selesai)</div>
-        <div class="progress-wrap"><div class="progress-fill"></div></div>
-        <div class="timeline">{timeline_items}</div>
-    </body></html>"""
+    .desc-pending  {{ color: #aaa;    font-size: 0.82rem; margin-top: 2px; }}
+</style>
+</head>
+<body>
+<div class="card" id="content">
+    <div class="card-title">📊 Progress Servis</div>
+    <div class="progress-label">{persen}% ({selesai}/{total} selesai)</div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+    <div class="timeline">{timeline_items}</div>
+</div>
+<script>
+    function sendHeight() {{
+        const h = document.getElementById('content').scrollHeight;
+        window.parent.postMessage({{
+            type: 'streamlit:setFrameHeight',
+            height: h + 8
+        }}, '*');
+    }}
+    // Kirim saat load & resize
+    window.addEventListener('load', sendHeight);
+    window.addEventListener('resize', sendHeight);
+    // Fallback pakai ResizeObserver
+    const ro = new ResizeObserver(sendHeight);
+    ro.observe(document.getElementById('content'));
+</script>
+</body>
+</html>"""
 
-    components.html(html, height=tinggi, scrolling=False)
+    # Tinggi awal cukup besar, script JS akan menyesuaikan otomatis
+    components.html(html, height=total * 68 + 160, scrolling=False)
 
     # ── Catatan Teknisi ──
     catatan = str(row["Catatan Service"]).strip() if "Catatan Service" in row.index else ""
     catatan_content = catatan if catatan and catatan.upper() not in ("", "NONE", "NAN") else None
 
     st.markdown(f"""
-    <div class="card" style="margin-top:16px;">
+    <div class="card" style="margin-top:4px;">
         <div class="card-title">🗒️ Catatan Teknisi</div>
-        <div style="color:{'#000000' if catatan_content else '#aaaaaa'}; font-size:0.97rem;">
+        <div style="color:{'#000' if catatan_content else '#aaa'}; font-size:0.97rem;">
             {catatan_content if catatan_content else "Belum ada catatan dari teknisi."}
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
+
+
 # ─────────────────────────────────────────────
 # UI UTAMA
 # ─────────────────────────────────────────────
@@ -242,150 +265,99 @@ def main():
         page_title="Tracking Servis",
         page_icon="🔧",
         layout="centered",
-    ) 
-
-    st.markdown(
-        """
-        <style>
-            /* ── Background ── */
-            .stApp {
-                background-color: #ffffff;
-            }
-
-                /* ── Card / Box ── */
-            .card {
-                background-color: #f5f8ff;
-                border: 1px solid #d0dff5;
-                border-radius: 12px;
-                padding: 24px 28px;
-                margin-bottom: 20px;
-                box-shadow: 0 2px 8px rgba(14, 80, 140, 0.08);
-            }
-            .card-title {
-                color: #0e508c;
-                font-size: 1.2rem;
-                font-weight: 700;
-                margin-bottom: 16px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-    
-            /* ── Teks umum ── */
-            .stApp, .stApp p, .stApp div, .stApp span {
-                color: #000000;
-            }
-    
-            /* ── Header title ── */
-            h1, h2, h3 {
-                color: #0e508c !important;
-            }
-    
-            /* ── Label bold (info pelanggan) ── */
-            strong {
-                color: #0e508c;
-            }
-    
-            /* ── Input box ── */
-            .stTextInput > div > div > input {
-                background-color: #f5f8ff;
-                color: #000000;
-                border: 1.5px solid #3b76eb;
-                border-radius: 8px;
-            }
-            .stTextInput > div > div > input::placeholder {
-                color: #aaaaaa;
-            }
-            .stTextInput > div > div > input:focus {
-                border-color: #0e508c;
-                box-shadow: 0 0 0 2px #52a2ff44;
-            }
-    
-            /* ── Tombol primary ── */
-            .stButton > button {
-                background-color: #f6891f !important;
-                color: #ffffff !important;
-                border: none;
-                border-radius: 8px;
-                font-weight: 600;
-                transition: background 0.2s;
-            }
-            .stButton > button:hover {
-                background-color: #faa849 !important;
-            }
-    
-            /* ── Progress bar ── */
-            .stProgress > div > div > div > div {
-                background-color: #f6891f;
-            }
-            .stProgress > div > div > div {
-                background-color: #e8eef8;
-                border-radius: 8px;
-            }
-    
-            /* ── st.success ── */
-            .stAlert[kind="success"], div[data-testid="stNotification"] {
-                border-radius: 8px;
-            }
-            .stSuccess {
-                background-color: #eaf3ff !important;
-                border-left: 4px solid #3b76eb !important;
-                color: #0e508c !important;
-            }
-    
-            /* ── st.error ── */
-            .stError {
-                border-left: 4px solid #f6891f !important;
-            }
-    
-            /* ── st.warning ── */
-            .stWarning {
-                background-color: #fff8ee !important;
-                border-left: 4px solid #faa849 !important;
-                color: #000000 !important;
-            }
-    
-            /* ── st.info (catatan teknisi) ── */
-            .stAlert {
-                background-color: #eaf3ff !important;
-                border-left: 4px solid #52a2ff !important;
-                color: #0e508c !important;
-                border-radius: 8px;
-            }
-    
-            /* ── st.caption ── */
-            .stCaption {
-                color: #888888 !important;
-            }
-    
-            /* ── Divider ── */
-            hr {
-                border-color: #e0e8f5;
-            }
-    
-            /* ── Sidebar (kalau ada) ── */
-            section[data-testid="stSidebar"] {
-                background-color: #0e508c;
-                color: #ffffff;
-            }
-    
-            /* ── Footer ── */
-            footer p {
-                color: #aaaaaa !important;
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
     )
 
-    st.markdown(
-        """
+    st.markdown("""
+    <style>
+        .stApp { background-color: #ffffff; }
+
+        .stApp, .stApp p, .stApp div, .stApp span { color: #000000; }
+
+        h1, h2, h3 { color: #0e508c !important; }
+
+        strong { color: #0e508c; }
+
+        /* Card */
+        .card {
+            background-color: #f5f8ff;
+            border: 1px solid #d0dff5;
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(14, 80, 140, 0.08);
+        }
+        .card-title {
+            color: #0e508c;
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        /* Input */
+        .stTextInput > div > div > input {
+            background-color: #f5f8ff;
+            color: #000000;
+            border: 1.5px solid #3b76eb;
+            border-radius: 8px;
+        }
+        .stTextInput > div > div > input::placeholder { color: #aaaaaa; }
+        .stTextInput > div > div > input:focus {
+            border-color: #0e508c;
+            box-shadow: 0 0 0 2px #52a2ff44;
+        }
+
+        /* Tombol */
+        .stButton > button {
+            background-color: #f6891f !important;
+            color: #ffffff !important;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .stButton > button:hover { background-color: #faa849 !important; }
+
+        /* Progress bar Streamlit (fallback) */
+        .stProgress > div > div > div > div { background-color: #f6891f; }
+        .stProgress > div > div > div { background-color: #e8eef8; border-radius: 8px; }
+
+        /* Alerts */
+        .stAlert {
+            background-color: #eaf3ff !important;
+            border-left: 4px solid #52a2ff !important;
+            color: #0e508c !important;
+            border-radius: 8px;
+        }
+        .stSuccess {
+            background-color: #eaf3ff !important;
+            border-left: 4px solid #3b76eb !important;
+            color: #0e508c !important;
+        }
+        .stWarning {
+            background-color: #fff8ee !important;
+            border-left: 4px solid #faa849 !important;
+            color: #000 !important;
+        }
+        .stError { border-left: 4px solid #f6891f !important; }
+
+        .stCaption { color: #888888 !important; }
+
+        hr { border-color: #e0e8f5; }
+
+        section[data-testid="stSidebar"] {
+            background-color: #0e508c;
+            color: #ffffff;
+        }
+
+        footer p { color: #aaaaaa !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
         <h1 style='text-align:center; font-size:2.2rem;'>🔧 Tracking Servis Barang</h1>
         <p style='text-align:center; color:gray;'>Masukkan ID servis kamu untuk melihat progress servis.</p>
         <hr>
-        """,
-        unsafe_allow_html=True,
-    )
+    """, unsafe_allow_html=True)
 
     id_input = st.text_input(
         "ID Servis",
