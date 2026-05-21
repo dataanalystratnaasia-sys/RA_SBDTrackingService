@@ -69,9 +69,7 @@ def cari_barang(df, id_barang):
     hasil = df[mask]
     return hasil.iloc[0] if not hasil.empty else None
 
-
 def render_info_pelanggan(row):
-    """Tampilkan kartu info pelanggan."""
     def _get(col):
         return str(row[col]).strip() if col in row.index else "-"
     nama      = _get("Nama Pelanggan")
@@ -82,67 +80,75 @@ def render_info_pelanggan(row):
     issue     = _get("Issue")
     guarantee = _get("Guarantee")
 
-    st.markdown("### 👤 Informasi Pelanggan")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("**Nama**")
-        st.write(nama)
-        st.markdown("**No. Telepon**")
-        st.write(telp)
-        st.markdown("**Alamat**")
-        st.write(alamat)
-    with col2:
-        st.markdown("**Merk**")
-        st.write(merk)
-        st.markdown("**Type**")
-        st.write(tipe)
-        st.markdown("**Keluhan / Issue**")
-        st.write(issue)
-
-    # Garansi
+    # Garansi badge
     if guarantee.lower() == "ya":
-        st.success("🛡️ **Garansi:** Ya — Barang ini dalam masa garansi")
+        badge = "🛡️ <span style='color:#3b76eb;font-weight:600;'>Ya — Barang ini dalam masa garansi</span>"
+        badge_bg = "#eaf3ff"
+        badge_border = "#3b76eb"
     else:
-        st.warning("🔧 **Garansi:** Tidak — Barang ini di luar masa garansi")
+        badge = "🔧 <span style='color:#f6891f;font-weight:600;'>Tidak — Barang ini di luar masa garansi</span>"
+        badge_bg = "#fff8ee"
+        badge_border = "#faa849"
 
-    st.markdown("---")
-
+    st.markdown(f"""
+    <div class="card">
+        <div class="card-title">👤 Informasi Pelanggan</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px 32px;">
+            <div>
+                <div style="color:#0e508c;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Nama</div>
+                <div style="color:#000;margin-bottom:12px;">{nama}</div>
+                <div style="color:#0e508c;font-weight:600;font-size:0.85rem;margin-bottom:4px;">No. Telepon</div>
+                <div style="color:#000;margin-bottom:12px;">{telp}</div>
+                <div style="color:#0e508c;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Alamat</div>
+                <div style="color:#000;">{alamat}</div>
+            </div>
+            <div>
+                <div style="color:#0e508c;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Merk</div>
+                <div style="color:#000;margin-bottom:12px;">{merk}</div>
+                <div style="color:#0e508c;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Type</div>
+                <div style="color:#000;margin-bottom:12px;">{tipe}</div>
+                <div style="color:#0e508c;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Keluhan / Issue</div>
+                <div style="color:#000;">{issue}</div>
+            </div>
+        </div>
+        <div style="margin-top:16px; padding:12px 16px; background:{badge_bg}; border-left:4px solid {badge_border}; border-radius:8px;">
+            <b>Garansi:</b> {badge}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 def render_progress(row):
     selesai = 0
     total   = len(SERVICE_COLS)
-
     status_list = []
+
     for col in SERVICE_COLS:
-        val = str(row[col]).strip().upper() if col in row.index else "FALSE"
-        done = val == "TRUE"
+        if col in row.index:
+            val = row[col]
+            if isinstance(val, bool):
+                done = val
+            else:
+                done = str(val).strip().upper() in ("TRUE", "1", "YA", "YES")
+        else:
+            done = False
         if done:
             selesai += 1
         status_list.append((col, done))
 
     persen = int((selesai / total) * 100) if total > 0 else 0
 
-    st.markdown(f"### 📊 Progress Servis: {persen}% ({selesai}/{total} selesai)")
-    st.progress(persen / 100)
-    st.markdown("")
+    # Warna progress bar manual
+    bar_color = "#f6891f"
+    bar_bg    = "#e0e8f5"
 
-    # Bangun HTML timeline
     timeline_items = ""
     for i, (nama, done) in enumerate(status_list):
         is_last  = (i == len(status_list) - 1)
         line_div = "" if is_last else '<div class="line"></div>'
-
-        if done:
-            dot_cls   = "dot done"
-            label_cls = "label-done"
-            desc      = "Selesai"
-            desc_cls  = "desc-done"
-        else:
-            dot_cls   = "dot pending"
-            label_cls = "label-pending"
-            desc      = "Menunggu"
-            desc_cls  = "desc-pending"
+        dot_cls   = "dot done"    if done else "dot pending"
+        label_cls = "label-done"  if done else "label-pending"
+        desc      = "Selesai"     if done else "Menunggu"
+        desc_cls  = "desc-done"   if done else "desc-pending"
 
         timeline_items += f"""
         <div class="item">
@@ -154,16 +160,36 @@ def render_progress(row):
                 <div class="{label_cls}">{nama}</div>
                 <div class="{desc_cls}">{desc}</div>
             </div>
-        </div>
-        """
-    html = f"""<!DOCTYPE html>
-<html>
-<head>
-<style>
+        </div>"""
+
+    tinggi = total * 58 + 120
+
+    html = f"""<!DOCTYPE html><html><head><style>
+    * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
-        margin: 0; padding: 0;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: transparent;
+        background: #f5f8ff;
+        border: 1px solid #d0dff5;
+        border-radius: 12px;
+        padding: 24px 28px;
+        box-shadow: 0 2px 8px rgba(14,80,140,0.08);
+    }}
+    .card-title {{
+        color: #0e508c; font-size: 1.2rem; font-weight: 700;
+        margin-bottom: 8px;
+    }}
+    .progress-wrap {{
+        background: {bar_bg}; border-radius: 8px;
+        height: 10px; margin-bottom: 20px; overflow: hidden;
+    }}
+    .progress-fill {{
+        height: 100%; width: {persen}%;
+        background: {bar_color}; border-radius: 8px;
+        transition: width 0.4s ease;
+    }}
+    .progress-label {{
+        color: #0e508c; font-size: 0.88rem;
+        margin-bottom: 6px; font-weight: 600;
     }}
     .timeline {{ padding: 4px 0 8px 0; }}
     .item {{ display: flex; align-items: flex-start; gap: 14px; }}
@@ -176,7 +202,7 @@ def render_progress(row):
         border-radius: 50%; margin-top: 4px; flex-shrink: 0;
     }}
     .dot.done    {{ background-color: #f6891f; }}
-    .dot.pending {{ background-color: #ffffff; border: 2px solid #3b76eb; box-sizing: border-box; }}
+    .dot.pending {{ background-color: #fff; border: 2px solid #3b76eb; }}
     .line {{
         width: 2px; min-height: 30px; flex: 1;
         background-color: #d0dff5; margin: 3px 0;
@@ -186,29 +212,28 @@ def render_progress(row):
     .label-pending {{ font-weight: 400; color: #888888; font-size: 0.97rem; }}
     .desc-done     {{ color: #f6891f; font-size: 0.82rem; margin-top: 2px; font-weight: 600; }}
     .desc-pending  {{ color: #aaaaaa; font-size: 0.82rem; margin-top: 2px; }}
-</style>
-</head>
-<body>
-    <div class="timeline">
-        {timeline_items}
-    </div>
-</body>
-</html>"""
+    </style></head><body>
+        <div class="card-title">📊 Progress Servis</div>
+        <div class="progress-label">{persen}% ({selesai}/{total} selesai)</div>
+        <div class="progress-wrap"><div class="progress-fill"></div></div>
+        <div class="timeline">{timeline_items}</div>
+    </body></html>"""
 
-    tinggi = total * 58 + 20
     components.html(html, height=tinggi, scrolling=False)
 
-    # Catatan teknisi (kolom "Catatan Service")
-    st.markdown("---")
+    # ── Catatan Teknisi ──
     catatan = str(row["Catatan Service"]).strip() if "Catatan Service" in row.index else ""
+    catatan_content = catatan if catatan and catatan.upper() not in ("", "NONE", "NAN") else None
 
-    st.markdown("### 🗒️ Catatan Teknisi")
-    if catatan and catatan.upper() not in ("", "NONE", "NAN"):
-        st.info(catatan)
-    else:
-        st.caption("Belum ada catatan dari teknisi.")
-
-
+    st.markdown(f"""
+    <div class="card" style="margin-top:16px;">
+        <div class="card-title">🗒️ Catatan Teknisi</div>
+        <div style="color:{'#000000' if catatan_content else '#aaaaaa'}; font-size:0.97rem;">
+            {catatan_content if catatan_content else "Belum ada catatan dari teknisi."}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
 # ─────────────────────────────────────────────
 # UI UTAMA
 # ─────────────────────────────────────────────
@@ -225,6 +250,25 @@ def main():
             /* ── Background ── */
             .stApp {
                 background-color: #ffffff;
+            }
+
+                /* ── Card / Box ── */
+            .card {
+                background-color: #f5f8ff;
+                border: 1px solid #d0dff5;
+                border-radius: 12px;
+                padding: 24px 28px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 8px rgba(14, 80, 140, 0.08);
+            }
+            .card-title {
+                color: #0e508c;
+                font-size: 1.2rem;
+                font-weight: 700;
+                margin-bottom: 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
     
             /* ── Teks umum ── */
