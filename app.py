@@ -161,45 +161,31 @@ def render_progress(row):
 <head>
 <style>
     body {{
-        margin: 0;
-        padding: 0;
+        margin: 0; padding: 0;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         background: transparent;
     }}
     .timeline {{ padding: 4px 0 8px 0; }}
-    .item {{
-        display: flex;
-        align-items: flex-start;
-        gap: 14px;
-    }}
+    .item {{ display: flex; align-items: flex-start; gap: 14px; }}
     .col-left {{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 18px;
-        flex-shrink: 0;
+        display: flex; flex-direction: column;
+        align-items: center; width: 18px; flex-shrink: 0;
     }}
     .dot {{
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        margin-top: 4px;
-        flex-shrink: 0;
+        width: 14px; height: 14px;
+        border-radius: 50%; margin-top: 4px; flex-shrink: 0;
     }}
     .dot.done    {{ background-color: #f6891f; }}
-    .dot.pending {{ background-color: transparent; border: 2px solid #52a2ff; box-sizing: border-box; }}
+    .dot.pending {{ background-color: #ffffff; border: 2px solid #3b76eb; box-sizing: border-box; }}
     .line {{
-        width: 2px;
-        min-height: 30px;
-        flex: 1;
-        background-color: #3b76eb;
-        margin: 3px 0;
+        width: 2px; min-height: 30px; flex: 1;
+        background-color: #d0dff5; margin: 3px 0;
     }}
     .col-right {{ padding-bottom: 18px; }}
-    .label-done    {{ font-weight: 600; color: #ffffff;  font-size: 0.97rem; }}
-    .label-pending {{ font-weight: 400; color: #52a2ff;  font-size: 0.97rem; }}
-    .desc-done    {{ color: #faa849; font-size: 0.82rem; margin-top: 2px; }}
-    .desc-pending {{ color: #ffd057; font-size: 0.82rem; margin-top: 2px; opacity: 0.6; }}
+    .label-done    {{ font-weight: 600; color: #000000; font-size: 0.97rem; }}
+    .label-pending {{ font-weight: 400; color: #888888; font-size: 0.97rem; }}
+    .desc-done     {{ color: #f6891f; font-size: 0.82rem; margin-top: 2px; font-weight: 600; }}
+    .desc-pending  {{ color: #aaaaaa; font-size: 0.82rem; margin-top: 2px; }}
 </style>
 </head>
 <body>
@@ -231,110 +217,117 @@ def main():
         page_title="Tracking Servis",
         page_icon="🔧",
         layout="centered",
-    )
+    ) 
 
     st.markdown(
         """
         <style>
-            /* Background utama */
+            /* ── Background ── */
             .stApp {
-                background-color: #0e508c;
+                background-color: #ffffff;
             }
     
-            /* Teks umum */
-            .stApp, .stApp p, .stApp label, .stApp div {
-                color: #ffffff;
+            /* ── Teks umum ── */
+            .stApp, .stApp p, .stApp div, .stApp span {
+                color: #000000;
             }
     
-            /* Input box */
+            /* ── Header title ── */
+            h1, h2, h3 {
+                color: #0e508c !important;
+            }
+    
+            /* ── Label bold (info pelanggan) ── */
+            strong {
+                color: #0e508c;
+            }
+    
+            /* ── Input box ── */
             .stTextInput > div > div > input {
-                background-color: #3b76eb;
-                color: #ffffff;
-                border: 1.5px solid #52a2ff;
+                background-color: #f5f8ff;
+                color: #000000;
+                border: 1.5px solid #3b76eb;
                 border-radius: 8px;
             }
             .stTextInput > div > div > input::placeholder {
-                color: #ffd057aa;
+                color: #aaaaaa;
+            }
+            .stTextInput > div > div > input:focus {
+                border-color: #0e508c;
+                box-shadow: 0 0 0 2px #52a2ff44;
             }
     
-            /* Tombol primary */
-            .stButton > button[kind="primary"] {
-                background-color: #f6891f;
-                color: #ffffff;
+            /* ── Tombol primary ── */
+            .stButton > button {
+                background-color: #f6891f !important;
+                color: #ffffff !important;
                 border: none;
                 border-radius: 8px;
                 font-weight: 600;
                 transition: background 0.2s;
             }
-            .stButton > button[kind="primary"]:hover {
-                background-color: #faa849;
-                color: #ffffff;
+            .stButton > button:hover {
+                background-color: #faa849 !important;
             }
     
-            /* Progress bar */
+            /* ── Progress bar ── */
             .stProgress > div > div > div > div {
                 background-color: #f6891f;
             }
             .stProgress > div > div > div {
-                background-color: #3b76eb;
+                background-color: #e8eef8;
                 border-radius: 8px;
             }
     
-            /* Alert success */
-            .stAlert[data-baseweb="notification"][kind="positive"],
-            div[data-testid="stNotification"].success {
-                background-color: #3b76eb;
-                border-left: 4px solid #52a2ff;
-                color: #ffffff;
+            /* ── st.success ── */
+            .stAlert[kind="success"], div[data-testid="stNotification"] {
+                border-radius: 8px;
+            }
+            .stSuccess {
+                background-color: #eaf3ff !important;
+                border-left: 4px solid #3b76eb !important;
+                color: #0e508c !important;
             }
     
-            /* Alert warning */
-            div[data-testid="stNotification"].warning {
-                background-color: #f6891f22;
-                border-left: 4px solid #faa849;
-                color: #ffffff;
+            /* ── st.error ── */
+            .stError {
+                border-left: 4px solid #f6891f !important;
             }
     
-            /* Alert error */
-            div[data-testid="stNotification"].error {
-                background-color: #ff444422;
-                border-left: 4px solid #ff6666;
-                color: #ffffff;
+            /* ── st.warning ── */
+            .stWarning {
+                background-color: #fff8ee !important;
+                border-left: 4px solid #faa849 !important;
+                color: #000000 !important;
             }
     
-            /* Info box */
-            div[data-testid="stNotification"].info {
-                background-color: #3b76eb33;
-                border-left: 4px solid #52a2ff;
-                color: #ffffff;
-            }
-    
-            /* st.info() — catatan teknisi */
+            /* ── st.info (catatan teknisi) ── */
             .stAlert {
-                background-color: #3b76eb33 !important;
+                background-color: #eaf3ff !important;
                 border-left: 4px solid #52a2ff !important;
-                color: #ffffff !important;
+                color: #0e508c !important;
                 border-radius: 8px;
             }
     
-            /* st.caption */
-            .stApp .stCaption {
-                color: #ffd057 !important;
+            /* ── st.caption ── */
+            .stCaption {
+                color: #888888 !important;
             }
     
-            /* Divider */
+            /* ── Divider ── */
             hr {
-                border-color: #3b76eb;
+                border-color: #e0e8f5;
             }
     
-            /* Kolom info pelanggan — label bold */
-            strong {
-                color: #ffd057;
+            /* ── Sidebar (kalau ada) ── */
+            section[data-testid="stSidebar"] {
+                background-color: #0e508c;
+                color: #ffffff;
             }
     
-            /* Footer */
-            footer, .stApp footer p {
-                color: #52a2ff !important;
+            /* ── Footer ── */
+            footer p {
+                color: #aaaaaa !important;
             }
         </style>
         """,
