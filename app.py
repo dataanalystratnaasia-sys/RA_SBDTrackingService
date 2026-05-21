@@ -111,7 +111,7 @@ def render_info_pelanggan(row):
             </div>
         </div>
         <div style="margin-top:16px; padding:12px 16px; background:{badge_bg}; border-left:4px solid {badge_border}; border-radius:8px;">
-            <div style="color:#000; font-weight:600; margin-bottom:4px;">Garansi</div>
+            <div style="color:#000; font-weight:600; margin-bottom:4px;">🔧 Garansi</div>
             <div>{badge}</div>
         </div>
     </div>
