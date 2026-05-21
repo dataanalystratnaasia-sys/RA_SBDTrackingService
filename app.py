@@ -82,12 +82,12 @@ def render_info_pelanggan(row):
 
     if guarantee.lower() == "ya":
         badge        = "🛡️ <span style='color:#3b76eb;font-weight:600;'>Ya — Barang ini dalam masa garansi</span>"
-        badge_bg     = "#eaf3ff"
+        badge_bg     = "rgba(59, 118, 235, 0.08)"
         badge_border = "#3b76eb"
     else:
         badge        = "🔧 <span style='color:#f6891f;font-weight:600;'>Tidak — Barang ini di luar masa garansi</span>"
-        badge_bg     = "#fff8ee"
-        badge_border = "#faa849"
+        badge_bg     = "rgba(246, 137, 31, 0.08)"
+        badge_border = "#f6891f"
 
     st.markdown(f"""
     <div class="card">
@@ -158,6 +158,17 @@ def render_progress(row):
             </div>
         </div>"""
 
+    # Catatan teknisi
+    catatan = str(row["Catatan Service"]).strip() if "Catatan Service" in row.index else ""
+    catatan_content = catatan if catatan and catatan.upper() not in ("", "NONE", "NAN") else None
+    catatan_html = f"""
+    <div class="card-catatan">
+        <div class="card-title">🗒️ Catatan Teknisi</div>
+        <div style="color:{'#000' if catatan_content else '#aaa'}; font-size:0.97rem;">
+            {catatan_content if catatan_content else "Belum ada catatan dari teknisi."}
+        </div>
+    </div>"""
+
     html = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -169,6 +180,14 @@ def render_progress(row):
         overflow: hidden;
     }}
     .card {{
+        background: #f5f8ff;
+        border: 1px solid #d0dff5;
+        border-radius: 12px;
+        padding: 24px 28px;
+        box-shadow: 0 2px 8px rgba(14,80,140,0.08);
+        margin-bottom: 12px;
+    }}
+    .card-catatan {{
         background: #f5f8ff;
         border: 1px solid #d0dff5;
         border-radius: 12px;
@@ -216,11 +235,14 @@ def render_progress(row):
 </style>
 </head>
 <body>
-<div class="card" id="content">
-    <div class="card-title">📊 Progress Servis</div>
-    <div class="progress-label">{persen}% ({selesai}/{total} selesai)</div>
-    <div class="progress-wrap"><div class="progress-fill"></div></div>
-    <div class="timeline">{timeline_items}</div>
+<div id="content">
+    <div class="card">
+        <div class="card-title">📊 Progress Servis</div>
+        <div class="progress-label">{persen}% ({selesai}/{total} selesai)</div>
+        <div class="progress-wrap"><div class="progress-fill"></div></div>
+        <div class="timeline">{timeline_items}</div>
+    </div>
+    {catatan_html}
 </div>
 <script>
     function sendHeight() {{
@@ -230,31 +252,15 @@ def render_progress(row):
             height: h + 8
         }}, '*');
     }}
-    // Kirim saat load & resize
     window.addEventListener('load', sendHeight);
     window.addEventListener('resize', sendHeight);
-    // Fallback pakai ResizeObserver
     const ro = new ResizeObserver(sendHeight);
     ro.observe(document.getElementById('content'));
 </script>
 </body>
 </html>"""
 
-    # Tinggi awal cukup besar, script JS akan menyesuaikan otomatis
-    components.html(html, height=total * 68 + 160, scrolling=False)
-
-    # ── Catatan Teknisi ──
-    catatan = str(row["Catatan Service"]).strip() if "Catatan Service" in row.index else ""
-    catatan_content = catatan if catatan and catatan.upper() not in ("", "NONE", "NAN") else None
-
-    st.markdown(f"""
-    <div class="card" style="margin-top:4px;">
-        <div class="card-title">🗒️ Catatan Teknisi</div>
-        <div style="color:{'#000' if catatan_content else '#aaa'}; font-size:0.97rem;">
-            {catatan_content if catatan_content else "Belum ada catatan dari teknisi."}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    components.html(html, height=total * 68 + 280, scrolling=False)
 
 
 # ─────────────────────────────────────────────
@@ -270,20 +276,16 @@ def main():
     st.markdown("""
     <style>
         .stApp { background-color: #ffffff; }
-
         .stApp, .stApp p, .stApp div, .stApp span { color: #000000; }
-
         h1, h2, h3 { color: #0e508c !important; }
-
         strong { color: #0e508c; }
 
-        /* Card */
         .card {
             background-color: #f5f8ff;
             border: 1px solid #d0dff5;
             border-radius: 12px;
             padding: 24px 28px;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             box-shadow: 0 2px 8px rgba(14, 80, 140, 0.08);
         }
         .card-title {
@@ -293,7 +295,6 @@ def main():
             margin-bottom: 16px;
         }
 
-        /* Input */
         .stTextInput > div > div > input {
             background-color: #f5f8ff;
             color: #000000;
@@ -306,7 +307,6 @@ def main():
             box-shadow: 0 0 0 2px #52a2ff44;
         }
 
-        /* Tombol */
         .stButton > button {
             background-color: #f6891f !important;
             color: #ffffff !important;
@@ -317,11 +317,9 @@ def main():
         }
         .stButton > button:hover { background-color: #faa849 !important; }
 
-        /* Progress bar Streamlit (fallback) */
         .stProgress > div > div > div > div { background-color: #f6891f; }
         .stProgress > div > div > div { background-color: #e8eef8; border-radius: 8px; }
 
-        /* Alerts */
         .stAlert {
             background-color: #eaf3ff !important;
             border-left: 4px solid #52a2ff !important;
@@ -334,21 +332,13 @@ def main():
             color: #0e508c !important;
         }
         .stWarning {
-            background-color: #fff8ee !important;
+            background-color: rgba(246,137,31,0.08) !important;
             border-left: 4px solid #faa849 !important;
             color: #000 !important;
         }
         .stError { border-left: 4px solid #f6891f !important; }
-
         .stCaption { color: #888888 !important; }
-
         hr { border-color: #e0e8f5; }
-
-        section[data-testid="stSidebar"] {
-            background-color: #0e508c;
-            color: #ffffff;
-        }
-
         footer p { color: #aaaaaa !important; }
     </style>
     """, unsafe_allow_html=True)
