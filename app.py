@@ -81,11 +81,11 @@ def render_info_pelanggan(row):
     guarantee = _get("Guarantee")
 
     if guarantee.lower() == "ya":
-        badge        = "🛡️ <span style='color:#3b76eb;font-weight:600;'>Ya — Barang ini dalam masa garansi</span>"
+        badge        = "<span style='color:#3b76eb;font-weight:600;'>Ya — Barang ini dalam masa garansi</span>"
         badge_bg     = "rgba(59, 118, 235, 0.08)"
         badge_border = "#3b76eb"
     else:
-        badge        = "🔧 <span style='color:#f6891f;font-weight:600;'>Tidak — Barang ini di luar masa garansi</span>"
+        badge        = "<span style='color:#f6891f;font-weight:600;'>Tidak — Barang ini di luar masa garansi</span>"
         badge_bg     = "rgba(246, 137, 31, 0.08)"
         badge_border = "#f6891f"
 
@@ -111,7 +111,8 @@ def render_info_pelanggan(row):
             </div>
         </div>
         <div style="margin-top:16px; padding:12px 16px; background:{badge_bg}; border-left:4px solid {badge_border}; border-radius:8px;">
-            <b>Garansi:</b> {badge}
+            <div style="color:#000; font-weight:600; margin-bottom:4px;">Garansi</div>
+            <div>{badge}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
